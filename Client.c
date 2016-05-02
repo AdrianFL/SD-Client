@@ -19,7 +19,8 @@ main (int argc, char *argv[])
 	int n, enviados, recibidos;
 	char peticion[1024];
 	char edificio[10];
-	char cadena[1024];
+	struct hostent *new;
+	struct in_addr **addr_list;
 
 	/* Comprobar los argumentos */
 	if (argc !=  4)
@@ -64,6 +65,19 @@ main (int argc, char *argv[])
 	servidor_puerto=argv[2];
 	mensaje=argv[3];
 	
+	//obtener la direccion ip
+	new=gethostbyname(servidor_ip);
+	if(new==NULL){
+		printf("Error de escritura en el host. \n");
+		return 1;
+	}
+	addr_list=(struct in_addr **)nuevo->h_addr_list;
+	servidor_ip=inet_ntoa(*addr_list[0]);
+	printf("Direccion del servidor: %s", servidor_ip);
+	printf("\n\rEnviar mensaje \"%s\" a %s:%s...\n\r\n\r", mensaje, argv[1], servidor_puerto);
+	
+	
+	
 	/**** Paso 1: Abrir el socket ****/
 
 	s = socket(AF_INET, SOCK_STREAM, 0); /* creo el socket */
@@ -91,7 +105,6 @@ main (int argc, char *argv[])
 	
 	/**** Paso 3: Enviar mensaje ****/
 	
-	strcpy(cadena,mensaje);
 	mensaje[0]='\0';
 	strcpy(mensaje,cad);
 	strcat(mensaje,"\n");
