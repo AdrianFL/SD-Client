@@ -12,15 +12,17 @@ main (int argc, char *argv[])
 {
 	char *servidor_ip;
 	char *servidor_puerto;
-	char *mensaje, respuesta[1024];
+	char *mensaje, respuesta[10000];
 	struct sockaddr_in direccion;
-	int s;
+	int s, i;
 	int option=0;
 	int n, enviados, recibidos;
 	char peticion[1024];
 	char edificio[10];
 	struct hostent *new;
 	struct in_addr **addr_list;
+	json_t *data;
+    json_error_t error;
 
 	/* Comprobar los argumentos */
 	if (argc !=  4)
@@ -141,6 +143,45 @@ main (int argc, char *argv[])
 	}
 	respuesta[recibidos] = '\0';
 	printf("Respuesta [%d bytes]: %s\n\r", recibidos, respuesta);
+	data=json_loads(respuesta, 0, &error);
+	if(!data){
+		 fprintf(stderr, "Error: En linea %d: %s\n", error.line, error.text);
+		return 1;
+	}
+	
+	if(option==1){
+		printf("Listado de edificios de la Universidad de Alicante:\n\r");
+		for(i=0; i<json_array_size(data); i++){
+			json_t *entry, *nombre;
+			const char *message_text;
+			
+			entry = json_array_get(data, i);
+			if(!json_is_object(entry))
+			{
+				fprintf(stderr, "error: entry %d is not an object\n", i + 1);
+				json_decref(root);
+				return 1;
+			}
+			nombre=json_object_get(entry, "nombre");
+			if(!json_is_string(nombre)){
+				fprintf(stderr, "error: commit %d: sha is not a string\n", i + 1);
+				json_decref(root);
+				return 1;
+			}	
+			message_text=json_string_value(nombre);
+			printf("%s\n", nombre);
+		}
+		printf("\n");
+		printf("FIN DEL LISTADO DE EDIFICIOS");
+	}else if(option==2){
+		
+	}else if(option==3){
+		
+	}else if(option==4){
+		
+	}else{
+		
+	}
 
 	/**** Paso 5: Cerrar el socket ****/
 	close(s);
