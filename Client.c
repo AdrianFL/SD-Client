@@ -19,6 +19,7 @@ main (int argc, char *argv[])
 	int n, enviados, recibidos;
 	char peticion[1024];
 	char edificio[10];
+	char cadena[1024];
 
 	/* Comprobar los argumentos */
 	if (argc !=  4)
@@ -59,8 +60,9 @@ main (int argc, char *argv[])
 	}
 	
 	
-	
-	
+	servidor_ip=argv[1];
+	servidor_puerto=argv[2];
+	mensaje=argv[3];
 	
 	/**** Paso 1: Abrir el socket ****/
 
@@ -88,6 +90,20 @@ main (int argc, char *argv[])
 	printf("Conexión establecida\n\r");
 	
 	/**** Paso 3: Enviar mensaje ****/
+	
+	strcpy(cadena,mensaje);
+	mensaje[0]='\0';
+	strcpy(mensaje,cad);
+	strcat(mensaje,"\n");
+	strcat(mensaje,"Host: ");
+	strcat(mensaje,argv[1]);
+	strcat(mensaje,"\n");
+	strcat(mensaje,"Accept: text/html");
+	strcat(mensaje,"\n");
+	strcat(mensaje, "Accept-Charset:UTF-8");
+	strcat(mensaje,"\n");
+	strcat(mensaje,"\n");
+	printf("%s",mensaje);
 
 	n = strlen(mensaje);
 	enviados = write(s, mensaje, n);
