@@ -179,7 +179,33 @@ main (int argc, char *argv[])
 	}else if(option==2){
 		
 	}else if(option==3){
-		
+		printf("Listado de edificios en los que existen estancias sin ocupantes asignados:\n\r");
+		for(i=0; i<json_array_size(data); i++){
+			json_t *entry, *nombre;
+			const char *message_text;
+			
+			entry = json_array_get(data, i);
+			
+			
+			if(!json_is_object(entry)){
+				fprintf(stderr, "error: entry %d is not an object\n", i + 1);
+				json_decref(root);
+				return 1;
+			}
+			nombre=json_object_get(entry, "nombre");
+			
+			
+			if(!json_is_string(nombre)){
+				fprintf(stderr, "error: commit %d: sha is not a string\n", i + 1);
+				json_decref(root);
+				return 1;
+			}	
+			
+			message_text=json_string_value(nombre);
+			printf("%s\n", nombre);
+		}
+		printf("\n");
+		printf("FIN DEL LISTADO DE EDIFICIOS");
 	}else if(option==4){
 		
 	}else{
