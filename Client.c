@@ -6,6 +6,9 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <jansson.h>
+#include <stdarg.h>
+#include <netdb.h>
 
 int
 main (int argc, char *argv[])
@@ -47,7 +50,7 @@ main (int argc, char *argv[])
 			scanf("%d",&option);
 	}while(option<=0||option>4);
 	if(option==1){
-		strcpy(peticion, "GET /api/pub/edificio/all/items HTTP/1.1"");
+		strcpy(peticion, "GET /api/pub/edificio/all/items HTTP/1.1");
 	}else if(option==2){
 		strcpy(peticion, "GET /api/pub/estancia/edificio/");
 		printf("Elige el edificio (4 numeros):\n");
@@ -56,10 +59,10 @@ main (int argc, char *argv[])
 		strcat(peticion, "/items HTTP/1.1");
 	}
 	else if(option==3){
-		strcpy(cad,"GET /api/pub/edificio/despachos_vacios/items HTTP/1.1");
+		strcpy(peticion,"GET /api/pub/edificio/despachos_vacios/items HTTP/1.1");
 	}
 	else if(option==4){
-		strcpy(cad,"GET /api/agregados/seo/edificio/all/items HTTP/1.1");
+		strcpy(peticion,"GET /api/agregados/seo/edificio/all/items HTTP/1.1");
 	}
 	
 	
@@ -73,7 +76,7 @@ main (int argc, char *argv[])
 		printf("Error de escritura en el host. \n");
 		return 1;
 	}
-	addr_list=(struct in_addr **)nuevo->h_addr_list;
+	addr_list=(struct in_addr **)new->h_addr_list;
 	servidor_ip=inet_ntoa(*addr_list[0]);
 	printf("Direccion del servidor: %s", servidor_ip);
 	printf("\n\rEnviar mensaje \"%s\" a %s:%s...\n\r\n\r", mensaje, argv[1], servidor_puerto);
@@ -108,7 +111,7 @@ main (int argc, char *argv[])
 	/**** Paso 3: Enviar mensaje ****/
 	
 	mensaje[0]='\0';
-	strcpy(mensaje,cad);
+	strcpy(mensaje,peticion);
 	strcat(mensaje,"\n");
 	strcat(mensaje,"Host: ");
 	strcat(mensaje,argv[1]);
@@ -159,17 +162,17 @@ main (int argc, char *argv[])
 			if(!json_is_object(entry))
 			{
 				fprintf(stderr, "error: entry %d is not an object\n", i + 1);
-				json_decref(root);
+				json_decref(data);
 				return 1;
 			}
 			nombre=json_object_get(entry, "nombre");
 			if(!json_is_string(nombre)){
 				fprintf(stderr, "error: commit %d: sha is not a string\n", i + 1);
-				json_decref(root);
+				json_decref(data);
 				return 1;
 			}	
 			message_text=json_string_value(nombre);
-			printf("%s\n", nombre);
+			printf("%s\n", message_text);
 		}
 		printf("\n");
 		printf("FIN DEL LISTADO DE EDIFICIOS");
