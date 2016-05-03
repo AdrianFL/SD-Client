@@ -20,12 +20,12 @@ main (int argc, char *argv[])
 	int s, i;
 	int option=0;
 	int n, enviados, recibidos;
-	char peticion[1024], fichero_final[10000], aux[10000];
+	char peticion[1024];
 	char edificio[10];
 	struct hostent *new;
 	struct in_addr **addr_list;
 	json_t *data;
-    json_error_t error;
+	json_error_t error;
 	
 
 	/* Comprobar los argumentos */
@@ -147,10 +147,6 @@ main (int argc, char *argv[])
 	}
 	respuesta[recibidos] = '\0';
 	printf("Respuesta [%d bytes]: %s\n\r", recibidos, respuesta);
-	strcpy(fichero_final, "[");
-	aux=strtok(respuesta, "[");
-	aux=strtok(respuesta, NULL);
-	strcat(fichero_final, aux);
 	data=json_loads(fichero_final, 0, &error);
 	if(!data){
 		 fprintf(stderr, "Error: En linea %d: %s\n", error.line, error.text);
@@ -194,7 +190,7 @@ main (int argc, char *argv[])
 			
 			if(!json_is_object(entry)){
 				fprintf(stderr, "error: entry %d is not an object\n", i + 1);
-				json_decref(root);
+				json_decref(data);
 				return 1;
 			}
 			nombre=json_object_get(entry, "nombre");
@@ -202,12 +198,12 @@ main (int argc, char *argv[])
 			
 			if(!json_is_string(nombre)){
 				fprintf(stderr, "error: commit %d: sha is not a string\n", i + 1);
-				json_decref(root);
+				json_decref(data);
 				return 1;
 			}	
 			
 			message_text=json_string_value(nombre);
-			printf("%s\n", nombre);
+			printf("%s\n", message_text);
 		}
 		printf("\n");
 		printf("FIN DEL LISTADO DE EDIFICIOS");
