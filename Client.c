@@ -20,12 +20,13 @@ main (int argc, char *argv[])
 	int s, i;
 	int option=0;
 	int n, enviados, recibidos;
-	char peticion[1024];
+	char peticion[1024], fichero_final[10000], aux[10000];
 	char edificio[10];
 	struct hostent *new;
 	struct in_addr **addr_list;
 	json_t *data;
     json_error_t error;
+	
 
 	/* Comprobar los argumentos */
 	if (argc !=  4)
@@ -146,7 +147,11 @@ main (int argc, char *argv[])
 	}
 	respuesta[recibidos] = '\0';
 	printf("Respuesta [%d bytes]: %s\n\r", recibidos, respuesta);
-	data=json_loads(respuesta, 0, &error);
+	strcpy(fichero_final, "[");
+	aux=strtok(respuesta, "[");
+	aux=strtok(respuesta, NULL);
+	strcat(fichero_final, aux);
+	data=json_loads(fichero_final, 0, &error);
 	if(!data){
 		 fprintf(stderr, "Error: En linea %d: %s\n", error.line, error.text);
 		return 1;
