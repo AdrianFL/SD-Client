@@ -15,7 +15,7 @@ main (int argc, char *argv[])
 {
 	char *servidor_ip;
 	char *servidor_puerto;
-	char *mensaje, respuesta[10000];
+	char *mensaje, respuesta[1000000];
 	struct sockaddr_in direccion;
 	int s, i;
 	int option=0;
@@ -26,6 +26,14 @@ main (int argc, char *argv[])
 	struct in_addr **addr_list;
 	json_t *data;
 	json_error_t error;
+	char *respuesta_total;
+	char salida_json[1000000]="[";
+	char *token;
+	FILE *fichero;
+
+	respuesta_total=malloc(2000000);
+	token=malloc(1000000);
+	recibidos=1;
 	
 
 	/* Comprobar los argumentos */
@@ -137,17 +145,41 @@ main (int argc, char *argv[])
 
 	/**** Paso 4: Recibir respuesta ****/
 
-	n = sizeof(respuesta) - 1;
-	recibidos = read(s, respuesta, n);
-	if (recibidos == 1)
-	{
-		fprintf(stderr, "Error recibiendo respuesta\n\r");
-		close(s);
-		return 1;
+	
+	
+	fichero=fopen("/home/jose/Escritorio/fichero2.txt", "w");
+	while(recibidos!=0){
+	  n = sizeof(respuesta) - 1;
+	  recibidos = read(s, respuesta, n);
+	  fputs(respuesta,fichero);
+	  if (recibidos == 1)
+	  {
+	    fprintf(stderr, "Error recibiendo respuesta\n\r");
+	    close(s);
+	    return 1;
+	  }
+	  
+	  respuesta[recibidos] = '\0';
+	  
 	}
-	respuesta[recibidos] = '\0';
-	printf("Respuesta [%d bytes]: %s\n\r", recibidos, respuesta);
-	data=json_loads(fichero_final, 0, &error);
+	fclose(fichero);
+	
+	fichero=fopen("/home/jose/Escritorio/fichero2.txt", "r");
+	strcpy(respuesta_total,"");
+	while(fgets(respuesta,n,fichero)!=NULL){
+	  strcat(respuesta_total,respuesta);
+	}
+	
+	token=strtok(respuesta_total,"[");
+	token=strtok(NULL,"[");
+	strcat(salida_json,token);
+	strcat(salida_json,"\0");
+	//printf("Respuesta [%d bytes]: %s\n\r", recibidos, salida_json);
+	token=strtok(salida_json,"]");
+	strcpy(salida_json,token);
+	strcat(salida_json,"]\0");
+	printf("%s\n",salida_json);
+	data=json_loads(salida_json, 0, &error);
 	if(!data){
 		 fprintf(stderr, "Error: En linea %d: %s\n", error.line, error.text);
 		return 1;
@@ -176,7 +208,7 @@ main (int argc, char *argv[])
 			printf("%s\n", message_text);
 		}
 		printf("\n");
-		printf("FIN DEL LISTADO DE EDIFICIOS");
+		printf("FIN DEL LISTADO DE EDIFICIOS\n");
 	}else if(option==2){
 		
 	}else if(option==3){
@@ -206,9 +238,47 @@ main (int argc, char *argv[])
 			printf("%s\n", message_text);
 		}
 		printf("\n");
-		printf("FIN DEL LISTADO DE EDIFICIOS");
+		printf("FIN DEL LISTADO DE EDIFICIOS\n");
 	}else if(option==4){
-		
+		printf("Listado de numero de estancias y ocupantes por edificio:\n\r");
+		for(i=0; i<json_array_size(data); i++){
+			json_t *entry, *nombre,*ocupantes,*estancias;
+			char *message_text,*message_text2;
+			int message_ocupantes, message_estancias;
+			
+			
+			entry = json_array_get(data, i);
+			
+			
+			if(!json_is_object(entry)){
+				fprintf(stderr, "error: entry %d is not an object\n", i + 1);
+				json_decref(data);
+				return 1;
+			}
+			nombre=json_object_get(entry, "id");
+			ocupantes=json_object_get(entry,"ocupantes");
+			estancias=json_object_get(entry,"estancias");
+			
+			
+			if(!json_is_string(nombre)){
+				fprintf(stderr, "error: commit %d: sha is not a string\n", i + 1);
+				json_decref(data);
+				return 1;
+			}	
+			
+			message_text=json_string_value(nombre);
+			message_text2=strtok(message_text,"\"");
+			message_text2=strtok(NULL,"\"");
+			message_ocupantes=json_integer_value(ocupantes);
+			message_estancias=json_integer_value(estancias);
+			printf("%s\n", message_text2);
+			printf("Ocupantes: %d\n", message_ocupantes);
+			printf("Estancias: %d\n", message_estancias);
+			printf("\n");
+			
+		}
+		printf("\n");
+		printf("FIN DEL LISTADO DE EDIFICIOS\n");
 	}else{
 		
 	}
