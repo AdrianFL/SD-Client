@@ -22,6 +22,7 @@ main (int argc, char *argv[])
 	int n, enviados, recibidos;
 	char peticion[1024];
 	char edificio[10];
+	char planta[10];
 	struct hostent *new;
 	struct in_addr **addr_list;
 	json_t *data;
@@ -56,8 +57,9 @@ main (int argc, char *argv[])
 			printf("2.-Numero de estacias por edificio.\n");
 			printf("3.-Listado de edificions con estancias sin ocupantes asignados.\n");
 			printf("4.-Número de estancias y ocupantes por edificio.\n");
+			printf("5.-Número de estancias por edificio y planta.\n");
 			scanf("%d",&option);
-	}while(option<=0||option>4);
+	}while(option<=0||option>5);
 	if(option==1){
 		strcpy(peticion, "GET /api/pub/edificio/all/items HTTP/1.1");
 	}else if(option==2){
@@ -72,6 +74,18 @@ main (int argc, char *argv[])
 	}
 	else if(option==4){
 		strcpy(peticion,"GET /api/agregados/seo/edificio/all/items HTTP/1.1");
+	}
+	else if(option==5){
+		strcpy(peticion, "GET /api/pub/estancia/edificio/");
+		printf("Elige el edificio (4 numeros):\n");
+		scanf("%s",edificio);
+		strcat(peticion, edificio);
+		
+		strcat(peticion, "/planta/");
+		printf("Elige la planta:\n");
+		scanf("%s",planta);
+		strcat(peticion, planta);
+		strcat(peticion, "/items HTTP/1.1");
 	}
 	
 	
@@ -146,46 +160,46 @@ main (int argc, char *argv[])
 	/**** Paso 4: Recibir respuesta ****/
 
 	
-	
-	fichero=fopen("/home/jose/Escritorio/fichero2.txt", "w");
-	while(recibidos!=0){
-	  n = sizeof(respuesta) - 1;
-	  recibidos = read(s, respuesta, n);
-	  fputs(respuesta,fichero);
-	  if (recibidos == 1)
-	  {
-	    fprintf(stderr, "Error recibiendo respuesta\n\r");
-	    close(s);
-	    return 1;
+	if(option==1){
+	  
+	  fichero=fopen("/home/jose/Escritorio/fichero2.txt", "w");
+	  while(recibidos!=0){
+	    n = sizeof(respuesta) - 1;
+	    recibidos = read(s, respuesta, n);
+	    fputs(respuesta,fichero);
+	    if (recibidos == 1)
+	    {
+	      fprintf(stderr, "Error recibiendo respuesta\n\r");
+	      close(s);
+	      return 1;
+	    }
+	    
+	    respuesta[recibidos] = '\0';
+	    
+	  }
+	  fclose(fichero);
+	  
+	  fichero=fopen("/home/jose/Escritorio/fichero2.txt", "r");
+	  strcpy(respuesta_total,"");
+	  while(fgets(respuesta,n,fichero)!=NULL){
+	    strcat(respuesta_total,respuesta);
 	  }
 	  
-	  respuesta[recibidos] = '\0';
+	  token=strtok(respuesta_total,"[");
+	  token=strtok(NULL,"[");
+	  strcat(salida_json,token);
+	  strcat(salida_json,"\0");
+	  //printf("Respuesta [%d bytes]: %s\n\r", recibidos, salida_json);
+	  token=strtok(salida_json,"]");
+	  strcpy(salida_json,token);
+	  strcat(salida_json,"]\0");
+	  printf("%s\n",salida_json);
+	  data=json_loads(salida_json, 0, &error);
+	  if(!data){
+		  fprintf(stderr, "Error: En linea %d: %s\n", error.line, error.text);
+		  return 1;
+	  }
 	  
-	}
-	fclose(fichero);
-	
-	fichero=fopen("/home/jose/Escritorio/fichero2.txt", "r");
-	strcpy(respuesta_total,"");
-	while(fgets(respuesta,n,fichero)!=NULL){
-	  strcat(respuesta_total,respuesta);
-	}
-	
-	token=strtok(respuesta_total,"[");
-	token=strtok(NULL,"[");
-	strcat(salida_json,token);
-	strcat(salida_json,"\0");
-	//printf("Respuesta [%d bytes]: %s\n\r", recibidos, salida_json);
-	token=strtok(salida_json,"]");
-	strcpy(salida_json,token);
-	strcat(salida_json,"]\0");
-	printf("%s\n",salida_json);
-	data=json_loads(salida_json, 0, &error);
-	if(!data){
-		 fprintf(stderr, "Error: En linea %d: %s\n", error.line, error.text);
-		return 1;
-	}
-	
-	if(option==1){
 		printf("Listado de edificios de la Universidad de Alicante:\n\r");
 		for(i=0; i<json_array_size(data); i++){
 			json_t *entry, *nombre;
@@ -211,7 +225,74 @@ main (int argc, char *argv[])
 		printf("FIN DEL LISTADO DE EDIFICIOS\n");
 	}else if(option==2){
 		
+	    fichero=fopen("/home/jose/Escritorio/fichero2.txt", "w");
+	    while(recibidos!=0){
+	      n = sizeof(respuesta) - 1;
+	      recibidos = read(s, respuesta, n);
+	      fputs(respuesta,fichero);
+	      if (recibidos == 1)
+	      {
+		fprintf(stderr, "Error recibiendo respuesta\n\r");
+		close(s);
+		return 1;
+	      }
+	      
+	      respuesta[recibidos] = '\0';
+	      
+	    }
+	    fclose(fichero);
+	    
+	    fichero=fopen("/home/jose/Escritorio/fichero2.txt", "r");
+	    strcpy(respuesta_total,"");
+	    while(fgets(respuesta,n,fichero)!=NULL){
+	      strcat(respuesta_total,respuesta);
+	    }
+	    printf("%s\n",respuesta_total);
+	    printf("Fin de la salida\n");
+	    printf("\n");
+	  
+	  
 	}else if(option==3){
+		
+	      fichero=fopen("/home/jose/Escritorio/fichero2.txt", "w");
+	      while(recibidos!=0){
+		n = sizeof(respuesta) - 1;
+		recibidos = read(s, respuesta, n);
+		fputs(respuesta,fichero);
+		if (recibidos == 1)
+		{
+		  fprintf(stderr, "Error recibiendo respuesta\n\r");
+		  close(s);
+		  return 1;
+		}
+		
+		respuesta[recibidos] = '\0';
+		
+	      }
+	      fclose(fichero);
+	      
+	      fichero=fopen("/home/jose/Escritorio/fichero2.txt", "r");
+	      strcpy(respuesta_total,"");
+	      while(fgets(respuesta,n,fichero)!=NULL){
+		strcat(respuesta_total,respuesta);
+	      }
+	      
+	      token=strtok(respuesta_total,"[");
+	      token=strtok(NULL,"[");
+	      strcat(salida_json,token);
+	      strcat(salida_json,"\0");
+	      //printf("Respuesta [%d bytes]: %s\n\r", recibidos, salida_json);
+	      token=strtok(salida_json,"]");
+	      strcpy(salida_json,token);
+	      strcat(salida_json,"]\0");
+	      printf("%s\n",salida_json);
+	      data=json_loads(salida_json, 0, &error);
+	      if(!data){
+		      fprintf(stderr, "Error: En linea %d: %s\n", error.line, error.text);
+		      return 1;
+	      }
+	
+	
 		printf("Listado de edificios en los que existen estancias sin ocupantes asignados:\n\r");
 		for(i=0; i<json_array_size(data); i++){
 			json_t *entry, *nombre;
@@ -240,12 +321,51 @@ main (int argc, char *argv[])
 		printf("\n");
 		printf("FIN DEL LISTADO DE EDIFICIOS\n");
 	}else if(option==4){
+		
+		fichero=fopen("/home/jose/Escritorio/fichero2.txt", "w");
+		while(recibidos!=0){
+		  n = sizeof(respuesta) - 1;
+		  recibidos = read(s, respuesta, n);
+		  fputs(respuesta,fichero);
+		  if (recibidos == 1)
+		  {
+		    fprintf(stderr, "Error recibiendo respuesta\n\r");
+		    close(s);
+		    return 1;
+		  }
+		  
+		  respuesta[recibidos] = '\0';
+		  
+		}
+		fclose(fichero);
+		
+		fichero=fopen("/home/jose/Escritorio/fichero2.txt", "r");
+		strcpy(respuesta_total,"");
+		while(fgets(respuesta,n,fichero)!=NULL){
+		  strcat(respuesta_total,respuesta);
+		}
+		
+		token=strtok(respuesta_total,"[");
+		token=strtok(NULL,"[");
+		strcat(salida_json,token);
+		strcat(salida_json,"\0");
+		//printf("Respuesta [%d bytes]: %s\n\r", recibidos, salida_json);
+		token=strtok(salida_json,"]");
+		strcpy(salida_json,token);
+		strcat(salida_json,"]\0");
+		printf("%s\n",salida_json);
+		data=json_loads(salida_json, 0, &error);
+		if(!data){
+			fprintf(stderr, "Error: En linea %d: %s\n", error.line, error.text);
+			return 1;
+		}
 		printf("Listado de numero de estancias y ocupantes por edificio:\n\r");
 		for(i=0; i<json_array_size(data); i++){
 			json_t *entry, *nombre,*ocupantes,*estancias;
-			char *message_text,*message_text2;
+			char *message_text;
+			char *message_text2;
+			char *message_text3;
 			int message_ocupantes, message_estancias;
-			
 			
 			entry = json_array_get(data, i);
 			
@@ -267,11 +387,12 @@ main (int argc, char *argv[])
 			}	
 			
 			message_text=json_string_value(nombre);
-			message_text2=strtok(message_text,"\"");
-			message_text2=strtok(NULL,"\"");
+			message_text2=strtok(message_text,",");
+			message_text2=strtok(NULL,",");
+			message_text3=strtok(message_text2,"}");
 			message_ocupantes=json_integer_value(ocupantes);
 			message_estancias=json_integer_value(estancias);
-			printf("%s\n", message_text2);
+			printf("%s\n", message_text3);
 			printf("Ocupantes: %d\n", message_ocupantes);
 			printf("Estancias: %d\n", message_estancias);
 			printf("\n");
@@ -279,7 +400,32 @@ main (int argc, char *argv[])
 		}
 		printf("\n");
 		printf("FIN DEL LISTADO DE EDIFICIOS\n");
-	}else{
+	}else if (option==5){
+	    fichero=fopen("/home/jose/Escritorio/fichero2.txt", "w");
+	    while(recibidos!=0){
+	      n = sizeof(respuesta) - 1;
+	      recibidos = read(s, respuesta, n);
+	      fputs(respuesta,fichero);
+	      if (recibidos == 1)
+	      {
+		fprintf(stderr, "Error recibiendo respuesta\n\r");
+		close(s);
+		return 1;
+	      }
+	      
+	      respuesta[recibidos] = '\0';
+	      
+	    }
+	    fclose(fichero);
+	    
+	    fichero=fopen("/home/jose/Escritorio/fichero2.txt", "r");
+	    strcpy(respuesta_total,"");
+	    while(fgets(respuesta,n,fichero)!=NULL){
+	      strcat(respuesta_total,respuesta);
+	    }
+	    printf("%s\n",respuesta_total);
+	    printf("Fin de la salida\n");
+	    printf("\n");
 		
 	}
 
